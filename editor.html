@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Shape Editor Pro v7</title>
+  <link rel="stylesheet" href="./editor.css" type="text/css"/>
+</head>
+<body oncontextmenu="return false;">
+
+<!-- ══════════════ HEADER ══════════════ -->
+<div class="hdr">
+  <div class="logo">✦</div>
+  <span class="hdr-title">Shape Editor</span>
+  <span class="badge">Pro v7</span>
+  <div class="hdr-sp"></div>
+  <button class="hbtn" id="undoBtn" onclick="undo()" disabled>↩ Undo</button>
+  <button class="hbtn" id="redoBtn" onclick="redo()" disabled>↪ Redo</button>
+  <div class="ki">
+    <span class="ki-l">Key:</span>
+    <input id="keyInp" value="PETALS.YOUR_PETAL" spellcheck="false"
+      onchange="S.shapeKey=this.value;generateExport()"/>
+  </div>
+  <button class="hbtn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <button class="hbtn" onclick="resetCanvas()">↺ Clear</button>
+  <button class="hbtn g" onclick="exportJSON()">📤 JSON</button>
+  <button class="hbtn g" onclick="document.getElementById('jsonFile').click()">📥 Import</button>
+  <input type="file" id="jsonFile" accept=".json" style="display:none" onchange="importJSON(this)"/>
+  <button class="hbtn" onclick="copyExport()">⎘ Copy</button>
+  <button class="hbtn p" onclick="downloadExport()">↓ Export</button>
+</div>
+
+<!-- ══════════════ CONTEXT BAR ══════════════ -->
+<div class="ctxbar" id="ctxbar">
+  <div class="ctx-grp" id="ctx-mode-grp">
+    <span class="ctx-label" id="ctx-mode-lbl">Select</span>
+  </div>
+  <div class="ctx-grp" id="ctx-poly-grp" style="display:none">
+    <div class="poly-opt-wrap">
+      <label>Sides</label>
+      <input type="number" id="polySides" value="6" min="3" max="64"
+        oninput="S.polyOpts.sides=Math.max(3,parseInt(this.value)||6)"/>
+      <label>Inner R</label>
+      <input type="number" id="polyInnerR" value="0" min="0" max="0.99" step="0.05"
+        oninput="S.polyOpts.innerR=parseFloat(this.value)||0"/>
+    </div>
+  </div>
+  <div class="ctx-grp">
+    <button class="ctx-btn" id="snapBtn" onclick="toggleSnap()">🧲 Snap</button>
+    <select class="ctx-sel" id="snapSzSel" onchange="S.snapGridSize=parseFloat(this.value);redraw()">
+      <option value="0.05">0.05</option>
+      <option value="0.1">0.1</option>
+      <option value="0.25" selected>0.25</option>
+      <option value="0.5">0.5</option>
+    </select>
+  </div>
+  <div class="ctx-grp">
+    <button class="ctx-btn" id="gridBtn" onclick="S.showGrid=!S.showGrid;updateCtxBar();redraw()">⊞ Grid</button>
+    <button class="ctx-btn" id="handlesBtn" onclick="S.showHandles=!S.showHandles;updateCtxBar();redraw()">◎ Handles</button>
+  </div>
+  <div class="ctx-grp">
+    <div class="ctx-zoom-wrap">
+      <button onclick="setZoom(S.zoom/1.2)">−</button>
+      <span class="ctx-zoom" id="zoomDisp" onclick="resetView()">100%</span>
+      <button onclick="setZoom(S.zoom*1.2)">+</button>
+    </div>
+    <span class="ctx-sep"></span>
+    <button class="ctx-btn" onclick="resetView()">⊡ Fit</button>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN LAYOUT ══════════════ -->
+<div class="main">
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left">
+
+    <details class="sec" open>
+      <summary>Tools</summary>
+      <div class="sec-body">
+        <div class="tool-grid" id="toolGrid">
+          <button class="tbtn tbtn-full" data-mode="select"><span class="ti">↖</span>Select<span class="tk">1</span></button>
+          <button class="tbtn" data-mode="pan"><span class="ti">✋</span>Pan<span class="tk">H</span></button>
+          <button class="tbtn" data-mode="line"><span class="ti">╱</span>Line<span class="tk">2</span></button>
+          <button class="tbtn" data-mode="quad"><span class="ti">⌒</span>Quad<span class="tk">3</span></button>
+          <button class="tbtn" data-mode="cubic"><span class="ti">〜</span>Cubic<span class="tk">4</span></button>
+          <button class="tbtn" data-mode="move"><span class="ti">⌇</span>Subpath<span class="tk">5</span></button>
+          <button class="tbtn" data-mode="freehand"><span class="ti">✏</span>Freehand<span class="tk">6</span></button>
+          <button class="tbtn" data-mode="arc"><span class="ti">◠</span>Arc<span class="tk">7</span></button>
+          <button class="tbtn" data-mode="rect"><span class="ti">▭</span>Rect<span class="tk">8</span></button>
+          <button class="tbtn" data-mode="ellipse"><span class="ti">⬭</span>Ellipse<span class="tk">9</span></button>
+          <button class="tbtn" data-mode="text"><span class="ti">T</span>Text<span class="tk">T</span></button>
+          <button class="tbtn" data-mode="ref"><span class="ti">🖼</span>Ref<span class="tk">R</span></button>
+          <span class="tool-section-label">Shapes</span>
+          <button class="tbtn" data-mode="polygon"><span class="ti">⬡</span>Polygon<span class="tk">P</span></button>
+          <button class="tbtn" data-mode="star"><span class="ti">★</span>Star<span class="tk">*</span></button>
+          <button class="tbtn" data-mode="triangle"><span class="ti">▲</span>Triangle</button>
+          <button class="tbtn" data-mode="rrect"><span class="ti">▢</span>RRect</button>
+          <button class="tbtn" data-mode="rrect"><span class="ti">🌀</span>Spiral</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="sec" open>
+      <summary>Presets</summary>
+      <div class="sec-body">
+        <div class="pgrid">
+          <button class="pbtn" onclick="applyPreset('talisman')"><span class="pi">✦</span>Talisman</button>
+          <button class="pbtn" onclick="applyPreset('flower')"><span class="pi">❋</span>Flower</button>
+          <button class="pbtn" onclick="applyPreset('star')"><span class="pi">★</span>Star</button>
+          <button class="pbtn" onclick="applyPreset('leaf')"><span class="pi">◆</span>Leaf</button>
+          <button class="pbtn" onclick="applyPreset('gem')"><span class="pi">◈</span>Gem</button>
+          <button class="pbtn" onclick="applyPreset('arrow')"><span class="pi">➤</span>Arrow</button>
+          <button class="pbtn" onclick="applyPreset('heart')"><span class="pi">❤</span>Heart</button>
+          <button class="pbtn" onclick="applyPreset('shield')"><span class="pi">🛡</span>Shield</button>
+          <button class="pbtn" onclick="applyPreset('cross')"><span class="pi">✚</span>Cross</button>
+          <button class="pbtn" onclick="applyPreset('moon')"><span class="pi">☽</span>Moon</button>
+          <button class="pbtn" onclick="applyPreset('crystal')"><span class="pi">💠</span>Crystal</button>
+          <button class="pbtn" onclick="applyPreset('badge')"><span class="pi">🏅</span>Badge</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary>🔤 Fonts</summary>
+      <div class="sec-body">
+        <div class="font-url-row">
+          <input id="fontNameInp" class="pinp font-name-inp" placeholder="Name" style="width:52px"/>
+          <input id="fontUrlInp" class="pinp" placeholder="URL (.ttf, .woff2…)"/>
+        </div>
+        <div style="display:flex;gap:3px;margin-bottom:4px">
+          <button class="hbtn" style="flex:1;justify-content:center" onclick="loadFontFromURL()">🌐 Load URL</button>
+          <button class="hbtn font-file-btn" style="flex:1;justify-content:center" onclick="document.getElementById('fontFileInp').click()">📁 Upload File</button>
+        </div>
+        <input type="file" id="fontFileInp" accept=".ttf,.otf,.woff,.woff2" style="display:none" onchange="loadFontFromFile(this.files[0])"/>
+        <div class="font-list" id="fontList"></div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary>🤖 AI Trace</summary>
+      <div class="sec-body">
+        <div class="ai-drop" id="aiDrop" onclick="document.getElementById('aiImgInp').click()">
+          <span style="font-size:16px">🖼</span>
+          <span id="aiDropLbl">Drop image (no BG) or click</span>
+        </div>
+        <input type="file" id="aiImgInp" accept="image/*" style="display:none" onchange="loadAIImg(this.files[0])"/>
+        <div class="ai-btn-row">
+          <button class="hbtn g" onclick="openAIModal()" id="aiTraceBtn" disabled>✨ Trace</button>
+          <button class="hbtn warn" onclick="clearAIImg()" id="aiClearBtn" disabled>✕</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="sec" open>
+      <summary>Canvas View</summary>
+      <div class="sec-body">
+        <div class="cr">
+          <span class="cl">Preview size</span>
+          <input type="range" id="previewSize" min="40" max="220" step="2" value="140"
+            oninput="S.previewSize=parseFloat(this.value);document.getElementById('vpreviewSize').textContent=Math.round(S.previewSize);redraw()"/>
+          <span class="cv" id="vpreviewSize">140</span>
+        </div>
+        <div class="togr"><span class="togl">Grid</span><input type="checkbox" id="showGrid" checked onchange="S.showGrid=this.checked;updateCtxBar();redraw()"/></div>
+        <div class="togr"><span class="togl">Size ring</span><input type="checkbox" id="showSzRing" checked onchange="S.showSzRing=this.checked;redraw()"/></div>
+        <div class="togr"><span class="togl">Handles</span><input type="checkbox" id="showHandles" checked onchange="S.showHandles=this.checked;updateCtxBar();redraw()"/></div>
+        <div class="togr"><span class="togl">Repeats</span><input type="checkbox" id="showRepeats" checked onchange="S.showRepeats=this.checked;redraw()"/></div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary>Smart Snap</summary>
+      <div class="sec-body">
+        <div class="togr"><span class="togl">Enable snap</span><input type="checkbox" id="snapEnabled" checked onchange="S.snapEnabled=this.checked;updateCtxBar();redraw()"/></div>
+        <div class="togr" style="margin-top:3px"><span class="togl">⊕ Axis</span><input type="checkbox" id="snapAxis" checked onchange="S.snapAxis=this.checked"/></div>
+        <div class="togr"><span class="togl">⊞ Grid</span><input type="checkbox" id="snapGrid" checked onchange="S.snapGrid=this.checked"/></div>
+        <div class="togr"><span class="togl">◉ Points</span><input type="checkbox" id="snapPts" checked onchange="S.snapPoints=this.checked"/></div>
+        <div class="togr"><span class="togl">○ Ring</span><input type="checkbox" id="snapRing" onchange="S.snapRing=this.checked"/></div>
+        <div class="cr" style="margin-top:3px">
+          <span class="cl">Threshold</span>
+          <input type="range" id="snapThresh" min="0.02" max="0.15" step="0.01" value="0.05"
+            oninput="S.snapThreshold=parseFloat(this.value);document.getElementById('vsnapThresh').textContent=parseFloat(this.value).toFixed(2)"/>
+          <span class="cv" id="vsnapThresh">0.05</span>
+        </div>
+      </div>
+    </details>
+
+    <details class="sec">
+      <summary>Reference Image</summary>
+      <div class="sec-body">
+        <div class="drop-z" id="refDrop" onclick="document.getElementById('refImgInp').click()">
+          <div id="refDropLbl">📁 Click or drag image</div>
+        </div>
+        <input type="file" id="refImgInp" accept="image/*" style="display:none" onchange="loadRefImg(this.files[0])"/>
+        <div class="cr" style="margin-top:5px">
+          <span class="cl">Opacity</span>
+          <input type="range" id="refOpacity" min="0" max="1" step="0.05" value="0.35"
+            oninput="S.refOpacity=parseFloat(this.value);document.getElementById('vrefOpacity').textContent=Math.round(S.refOpacity*100)+'%';redraw()"/>
+          <span class="cv" id="vrefOpacity">35%</span>
+        </div>
+        <div class="cr">
+          <span class="cl">Scale</span>
+          <input type="range" id="refScale" min="0.1" max="3" step="0.05" value="1"
+            oninput="S.refScale=parseFloat(this.value);document.getElementById('vrefScale').textContent=parseFloat(this.value).toFixed(1)+'×';redraw()"/>
+          <span class="cv" id="vrefScale">1.0×</span>
+        </div>
+        <div class="togr"><span class="togl">Visible</span><input type="checkbox" id="refVisible" checked onchange="S.refVisible=this.checked;redraw()"/></div>
+        <div style="display:flex;gap:3px;margin-top:4px">
+          <button class="hbtn" style="flex:1;justify-content:center;font-size:8.5px" onclick="S.refOffX=0;S.refOffY=0;redraw();toast('Ref centered')">⊕ Center</button>
+          <button class="hbtn" style="flex:1;justify-content:center;font-size:8.5px" onclick="clearRef()">✕ Remove</button>
+        </div>
+      </div>
+    </details>
+
+  </div><!-- /left -->
+
+  <!-- ── CANVAS ── -->
+  <div class="carea" id="carea"><canvas id="c" tabindex=0></canvas></div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right">
+    <div class="rtabs">
+      <button class="rtab active" data-rtab="layers" onclick="setRTab('layers')">Layers</button>
+      <button class="rtab" data-rtab="props" onclick="setRTab('props')">Props</button>
+      <button class="rtab" data-rtab="export" onclick="setRTab('export')">Export</button>
+      <button class="rtab" data-rtab="json" onclick="setRTab('json')">JSON</button>
+    </div>
+
+    <!-- LAYERS -->
+    <div class="rpanel" id="rp-layers">
+      <div class="layer-acts">
+        <button class="hbtn" data-act="add-path">+Path</button>
+        <button class="hbtn" data-act="add-circle">+Circ</button>
+        <button class="hbtn" data-act="add-stroke">+Stroke</button>
+        <button class="hbtn" data-act="add-text">+Text</button>
+        <button class="hbtn" data-act="add-group" title="Group selected layers">📁 Grp</button>
+      </div>
+      <div id="layerList"></div>
+    </div>
+
+    <!-- PROPS -->
+    <div class="rpanel hidden" id="rp-props">
+      <div id="shapeProps"><div class="empty-h">Select a layer to edit.</div></div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="rpanel hidden" id="rp-export">
+      <div class="export-target-row">
+        <button class="etab active" data-et="pixi" onclick="setExportTarget('pixi')">PixiJS</button>
+        <button class="etab" data-et="canvas" onclick="setExportTarget('canvas')">Canvas 2D</button>
+        <button class="etab" data-et="webgl" onclick="setExportTarget('webgl')">WebGL</button>
+      </div>
+      <div class="preview-canvas-wrap">
+        <canvas id="previewCanvas" width="284" height="160"></canvas>
+        <span class="preview-label" id="previewLabel">PixiJS Preview</span>
+      </div>
+      <!-- image export -->
+      <div class="img-export-row">
+        <select class="img-format-sel" id="imgFormat">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPEG</option>
+          <option value="image/webp">WebP</option>
+        </select>
+        <button class="hbtn g" onclick="savePreviewAsImage()">🖼 Save Image</button>
+        <button class="hbtn" onclick="copyPreviewAsImage()">⎘ Copy</button>
+      </div>
+      <div class="copy-row">
+        <button class="hbtn" onclick="copyExport()">⎘ Copy code</button>
+        <button class="hbtn p" onclick="downloadExport()">↓ Download</button>
+      </div>
+      <pre class="code-out" id="exportOut"></pre>
+    </div>
+
+    <!-- JSON -->
+    <div class="rpanel hidden" id="rp-json">
+      <div style="display:flex;gap:3px;margin-bottom:7px">
+        <button class="hbtn" onclick="copyJSON()" style="flex:1;justify-content:center">⎘ Copy JSON</button>
+        <button class="hbtn g" onclick="exportJSON()" style="flex:1;justify-content:center">📤 Download</button>
+      </div>
+      <pre class="code-out" id="jsonOut"></pre>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ══════════════ STATUS BAR ══════════════ -->
+<div class="sbar">
+  <span class="si">Layer: <b id="st-layer">—</b></span>
+  <span class="si">Tool: <b id="st-mode">Select</b></span>
+  <span class="si">Pts: <b id="st-pts">—</b></span>
+  <span class="si">Sel: <b id="st-sel">0</b></span>
+  <span class="si-snap" id="st-snap"></span>
+  <span class="si-r si">Shape Editor Pro v7</span>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="tip" id="tip"></div>
+
+<!-- ══════════════ AI MODAL ══════════════ -->
+<div class="modal-overlay" id="aiModal">
+  <div class="modal">
+    <div class="modal-title">✨ AI Trace — Image → Shape</div>
+    <div class="modal-sub">Upload a PNG/WebP with transparency. Adjust settings then generate layers.</div>
+    <canvas class="modal-canvas" id="aiPreviewCanvas" width="360" height="180"></canvas>
+    <div class="modal-opts">
+      <div class="modal-opt">
+        <label>Alpha threshold <span class="cv" id="vAlphaThr">30</span></label>
+        <input type="range" id="alphaThr" min="0" max="128" value="30"
+          oninput="document.getElementById('vAlphaThr').textContent=this.value;aiPreviewUpdate()"/>
+      </div>
+      <div class="modal-opt">
+        <label>Simplify <span class="cv" id="vSimplify">0.010</span></label>
+        <input type="range" id="simplifyTol" min="0.002" max="0.05" step="0.001" value="0.01"
+          oninput="document.getElementById('vSimplify').textContent=parseFloat(this.value).toFixed(3)"/>
+      </div>
+      <div class="modal-opt">
+        <label>Smooth <span class="cv" id="vSmooth">2</span></label>
+        <input type="range" id="smoothPasses" min="0" max="6" value="2"
+          oninput="document.getElementById('vSmooth').textContent=this.value;aiPreviewUpdate()"/>
+      </div>
+      <div class="modal-opt">
+        <label>Output</label>
+        <select class="selinp" id="aiLayerMode" style="width:100%;margin-top:2px">
+          <option value="single">Single fill</option>
+          <option value="outline" selected>Fill + Outline</option>
+          <option value="shadow">Shadow + Fill</option>
+          <option value="full">Shadow + Fill + Outline</option>
+        </select>
+      </div>
+    </div>
+    <div class="trace-status" id="traceStatus">Ready to trace.</div>
+    <div class="trace-bar"><div class="trace-bar-fill" id="traceBarFill"></div></div>
+    <div class="modal-row">
+      <button class="hbtn" onclick="closeAIModal()">Cancel</button>
+      <button class="hbtn p" onclick="runAITrace()" id="runTraceBtn">✨ Generate Layers</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ RIGHT-CLICK CONTEXT MENU ══════════════ -->
+<div class="ctx-menu" id="ctxMenu">
+  <div class="cm-title" id="cmTitle">Layer Options</div>
+  <div class="cm-item" data-act="flip-h"><span class="cm-icon">↔</span> Flip Horizontal</div>
+  <div class="cm-item" data-act="flip-v"><span class="cm-icon">↕</span> Flip Vertical</div>
+  <div class="cm-sep"></div>
+  <div class="cm-item" data-act="toggle-mask"><span class="cm-icon">⬛</span> Toggle Mask Layer</div>
+  <div class="cm-item" data-act="toggle-stroke"><span class="cm-icon">◎</span> Toggle Stroke</div>
+  <div class="cm-item" data-act="add-subpath"><span class="cm-icon">＋</span> Add Subpath</div>
+  <div class="cm-sep"></div>
+  <div class="cm-item" data-act="merge-shapes"><span class="cm-icon">⧉</span> Merge with Selected</div>
+  <div class="cm-item" data-act="expand-repeats"><span class="cm-icon">⊕</span> Expand Repeats → Paths</div>
+  <div class="cm-sep"></div>
+  <div class="cm-item" data-act="group-sel"><span class="cm-icon">📁</span> Group Selected</div>
+  <div class="cm-item" data-act="ungroup"><span class="cm-icon">📂</span> Ungroup</div>
+  <div class="cm-sep"></div>
+  <div class="cm-item" data-act="dup-layer"><span class="cm-icon">⧉</span> Duplicate Layer</div>
+  <div class="cm-item danger" data-act="del-layer"><span class="cm-icon">✕</span> Delete Layer</div>
+</div>
+
+<script src="editor.js"></script>
+</body>
+</html>
