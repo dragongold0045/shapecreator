@@ -1,3 +1,4 @@
+console.log("loading");
 /* ═══════════════════════════════════════════════════════════════════
    SHAPE EDITOR PRO  v7  —  editor.js
    All features: flip, group, mask, gradient, polygon/star/rrect/spiral,
