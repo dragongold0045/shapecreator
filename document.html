@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shape Editor Pro v8 — User Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #1a1f36;
+    --ink2: #4a5270;
+    --ink3: #8890aa;
+    --page: #f6f7fb;
+    --card: #ffffff;
+    --line: #e4e7f0;
+    --ac: #4f6ef7;
+    --ac-dim: rgba(79,110,247,0.08);
+    --ac2: #7c5cf8;
+    --green: #16a34a;
+    --green-dim: rgba(22,163,74,0.09);
+    --amber: #b45309;
+    --amber-dim: rgba(180,83,9,0.09);
+    --red: #dc2626;
+    --red-dim: rgba(220,38,38,0.08);
+    --kbd-bg: #f0f2f8;
+    --kbd-bd: #c8cfe0;
+    --shadow-sm: 0 1px 3px rgba(26,31,54,0.08), 0 1px 2px rgba(26,31,54,0.04);
+    --shadow: 0 4px 16px rgba(26,31,54,0.10), 0 1px 3px rgba(26,31,54,0.06);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--page);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #1a1f36 0%, #252d52 50%, #1a2a4a 100%);
+    padding: 60px 40px 52px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(79,110,247,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(124,92,248,0.14) 0%, transparent 55%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px; padding: 5px 14px; font-size: 11px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,0.6);
+    margin-bottom: 22px;
+  }
+  .hero-logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, #4f6ef7, #7c5cf8);
+    font-size: 24px; margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(79,110,247,0.35);
+  }
+  .hero h1 {
+    font-size: 36px; font-weight: 700; color: #fff;
+    letter-spacing: -0.02em; margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: 15px; color: rgba(255,255,255,0.55); max-width: 480px; margin: 0 auto;
+  }
+  .hero-tags {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 22px;
+  }
+  .hero-tag {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; padding: 4px 10px; font-size: 11px; color: rgba(255,255,255,0.5);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── TOC ── */
+  .toc-wrap {
+    max-width: 800px; margin: 36px auto 0; padding: 0 24px;
+  }
+  .toc {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 22px 26px;
+    box-shadow: var(--shadow-sm);
+  }
+  .toc-title {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink3); margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .toc-title::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+  .toc-list {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px 20px;
+    list-style: none;
+  }
+  .toc-list a {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--ink2); text-decoration: none; font-size: 13px; font-weight: 500;
+    padding: 5px 0; transition: color .15s;
+  }
+  .toc-list a:hover { color: var(--ac); }
+  .toc-list .toc-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--ink3); width: 20px; flex-shrink: 0;
+  }
+
+  /* ── CONTENT ── */
+  .content { max-width: 800px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* ── SECTION ── */
+  .section { margin-top: 40px; scroll-margin-top: 20px; }
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 18px 22px; border-radius: 12px 12px 0 0;
+    background: linear-gradient(135deg, var(--ac) 0%, var(--ac2) 100%);
+    margin-bottom: 0;
+  }
+  .section-icon {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .section-header h2 {
+    font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.01em;
+  }
+  .section-header .sec-sub { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+  .section-num {
+    margin-left: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; font-weight: 700; color: rgba(255,255,255,0.25); flex-shrink: 0;
+  }
+  .section-body {
+    background: var(--card); border: 1px solid var(--line); border-top: none;
+    border-radius: 0 0 12px 12px; padding: 24px 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step {
+    display: flex; gap: 16px; align-items: flex-start;
+    padding: 16px 18px; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--page);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .step:hover { border-color: #c0c8e8; box-shadow: var(--shadow-sm); }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--ac), var(--ac2));
+    color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-body { flex: 1; }
+  .step-title { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .step-desc { font-size: 13px; color: var(--ink2); line-height: 1.65; }
+
+  /* ── TOOL GRID ── */
+  .tool-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 14px;
+  }
+  .tool-card {
+    border: 1px solid var(--line); border-radius: 9px; padding: 13px 14px;
+    background: var(--page); display: flex; gap: 12px; align-items: flex-start;
+  }
+  .tool-icon {
+    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    background: var(--ac-dim); color: var(--ac);
+  }
+  .tool-name { font-size: 12.5px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+  .tool-desc { font-size: 11.5px; color: var(--ink2); line-height: 1.5; }
+
+  /* ── KBD ── */
+  kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--kbd-bg); border: 1px solid var(--kbd-bd); border-bottom-width: 2px;
+    border-radius: 5px; padding: 1px 7px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 500; color: var(--ink2);
+    vertical-align: baseline; line-height: 1.6; white-space: nowrap;
+  }
+
+  /* ── SHORTCUT TABLE ── */
+  .shortcut-table {
+    width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 12px;
+  }
+  .shortcut-table th {
+    text-align: left; font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink3); padding: 6px 10px;
+    border-bottom: 2px solid var(--line); background: var(--page);
+  }
+  .shortcut-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--ink2); }
+  .shortcut-table tr:last-child td { border-bottom: none; }
+  .shortcut-table tr:hover td { background: var(--ac-dim); }
+  .shortcut-table td:first-child { width: 45%; }
+  .shortcut-table .desc { color: var(--ink); }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    display: flex; gap: 12px; padding: 13px 16px; border-radius: 9px;
+    margin: 14px 0; font-size: 13px; line-height: 1.6;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .callout.tip { background: var(--green-dim); border: 1px solid rgba(22,163,74,0.2); }
+  .callout.tip .callout-icon::before { content: '💡'; }
+  .callout.note { background: var(--ac-dim); border: 1px solid rgba(79,110,247,0.18); }
+  .callout.note .callout-icon::before { content: 'ℹ️'; }
+  .callout.warn { background: var(--amber-dim); border: 1px solid rgba(180,83,9,0.18); }
+  .callout.warn .callout-icon::before { content: '⚠️'; }
+  .callout p { color: var(--ink2); }
+  .callout strong { color: var(--ink); }
+
+  /* ── INLINE LABEL ── */
+  .label {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--ac-dim); border: 1px solid rgba(79,110,247,0.18);
+    color: var(--ac); border-radius: 5px; padding: 1px 8px;
+    font-size: 11px; font-weight: 600; vertical-align: middle;
+  }
+  .label.green { background: var(--green-dim); border-color: rgba(22,163,74,0.2); color: var(--green); }
+  .label.amber { background: var(--amber-dim); border-color: rgba(180,83,9,0.2); color: var(--amber); }
+  .label.purple { background: rgba(124,92,248,0.1); border-color: rgba(124,92,248,0.2); color: var(--ac2); }
+
+  /* ── UI ELEMENTS ── */
+  .ui-path {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: #1a1f36; color: #a8b4e8; padding: 2px 8px; border-radius: 5px;
+    display: inline-block;
+  }
+
+  /* ── WORKFLOW ── */
+  .workflow {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+    margin: 14px 0; overflow: hidden; border-radius: 8px; border: 1px solid var(--line);
+  }
+  .wf-step {
+    flex: 1; min-width: 100px; padding: 12px 14px; background: var(--page);
+    text-align: center; font-size: 11.5px; font-weight: 600; color: var(--ink2);
+    border-right: 1px solid var(--line); position: relative;
+  }
+  .wf-step:last-child { border-right: none; }
+  .wf-step .wf-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+  .wf-step.active { background: var(--ac-dim); color: var(--ac); }
+
+  .divider { height: 1px; background: var(--line); margin: 20px 0; }
+  .footer {
+    text-align: center; padding: 32px 24px 40px;
+    font-size: 12px; color: var(--ink3);
+  }
+  .footer a { color: var(--ac); text-decoration: none; }
+
+  p { margin-bottom: 10px; }
+  p:last-child { margin-bottom: 0; }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 26px; }
+    .toc-list { grid-template-columns: 1fr; }
+    .tool-grid { grid-template-columns: 1fr; }
+    .workflow { flex-direction: column; }
+    .wf-step { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">📖 User Guide · v8.0</div>
+  <div class="hero-logo">✦</div>
+  <h1>Shape Editor Pro</h1>
+  <p>A complete step-by-step guide to drawing custom shapes, advanced vector controls, AI tracing, and multi-platform engine exports.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">✨ AI Auto-Trace</span>
+    <span class="hero-tag">🧲 Smart Snap</span>
+    <span class="hero-tag">🔗 Connect Mode</span>
+    <span class="hero-tag">🎯 Base Point Relocation</span>
+    <span class="hero-tag">PixiJS / Canvas2D / WebGL</span>
+    <span class="hero-tag">JSON Import/Export</span>
+    <span class="hero-tag">Dark / Light Mode</span>
+  </div>
+</div>
+
+<div class="toc-wrap">
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#s1"><span class="toc-num">01</span> Interface & Card Layout</a></li>
+      <li><a href="#s2"><span class="toc-num">02</span> Navigating & View Controls</a></li>
+      <li><a href="#s3"><span class="toc-num">03</span> Advanced Drawing Tools</a></li>
+      <li><a href="#s4"><span class="toc-num">04</span> Smart Snap Engine</a></li>
+      <li><a href="#s5"><span class="toc-num">05</span> ✨ AI Trace</a></li>
+      <li><a href="#s6"><span class="toc-num">06</span> Layers, Groups & Opacity</a></li>
+      <li><a href="#s7"><span class="toc-num">07</span> Reference Image (Flexible Handles)</a></li>
+      <li><a href="#s8"><span class="toc-num">08</span> Presets</a></li>
+      <li><a href="#s9"><span class="toc-num">09</span> Export (Code & JSON)</a></li>
+      <li><a href="#s10"><span class="toc-num">10</span> Keyboard Shortcuts</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="section" id="s1">
+    <div class="section-header">
+      <div class="section-icon">🗂</div>
+      <div>
+        <h2>Interface & Card Layout</h2>
+        <div class="sec-sub">Know where everything lives in the redesigned v8 workspace</div>
+      </div>
+      <div class="section-num">01</div>
+    </div>
+    <div class="section-body">
+      <p>The editor workspace is divided into five main functional zones:</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">A</div>
+          <div class="step-body">
+            <div class="step-title">Header Bar (Top)</div>
+            <div class="step-desc">Contains the shape key input, global Undo/Redo, Theme toggle, Canvas clear, and global data pipeline actions like <strong>Import/Export JSON</strong>.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">B</div>
+          <div class="step-body">
+            <div class="step-title">Context Bar (Below Header)</div>
+            <div class="step-desc">Provides immediate feedback and fine-tuning controls for your current tool state, grid configurations, subpath start-point drawing toggles, and viewport Zoom rules.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">C</div>
+          <div class="step-body">
+            <div class="step-title">Left Panel — Tool Belt & Configuration</div>
+            <div class="step-desc">Houses drawing modes, geometric presets, the <strong>🤖 AI Trace</strong> hub, Smart Snapping coefficients, and the Reference Image matrix setup.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">D</div>
+          <div class="step-body">
+            <div class="step-title">Canvas (Center / Interactive Zone)</div>
+            <div class="step-desc">The high-performance render space supporting advanced node interactions, drag selection boxes, and real-time path calculations.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">E</div>
+          <div class="step-body">
+            <div class="step-title">Right Panel — Responsive Card Layout</div>
+            <div class="step-desc">A flexible layout stack managing <strong>Layers & Groups</strong>, node context <strong>Props</strong>, multi-selection coordinate popups, and immediate compilation engine outputs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s2">
+    <div class="section-header">
+      <div class="section-icon">🔭</div>
+      <div>
+        <h2>Navigating & View Controls</h2>
+        <div class="sec-sub">Pan freely, manage drag selections, and control context parameters</div>
+      </div>
+      <div class="section-num">02</div>
+    </div>
+    <div class="section-body">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Zoom & Fluid Pan</div>
+            <div class="step-desc">Roll the mouse wheel to execute cursor-centric zoom vectors. Hold <kbd>Middle Click</kbd> or press <kbd>H</kbd> to initiate Pan mode to move across infinite coordinates.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Drag Selection Box</div>
+            <div class="step-desc">Click and drag over an empty area of the canvas to create a bounding selection rectangle, instantly capturing multiple nodes for bulk operations.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Multi-Select Floating Menu</div>
+            <div class="step-desc">When multiple nodes are captured, a smart overlay popup reveals common base controls, enabling you to align, alter, or transform nodes uniformly.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s3">
+    <div class="section-header">
+      <div class="section-icon">🛠</div>
+      <div>
+        <h2>Advanced Drawing Tools</h2>
+        <div class="sec-sub">Vector precision, specialized path states, and geometry manipulation</div>
+      </div>
+      <div class="section-num">03</div>
+    </div>
+    <div class="section-body">
+      <div class="tool-grid">
+        <div class="tool-card">
+          <div class="tool-icon">↖</div>
+          <div>
+            <div class="tool-name">Select / Edit Node <kbd>1</kbd></div>
+            <div class="tool-desc">Select points, modify control points, or shift layers. Esc resets immediately to this mode.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">╱</div>
+          <div>
+            <div class="tool-name">Line Segment <kbd>2</kbd></div>
+            <div class="tool-desc">Appends sharp linear <span class="label">L</span> segments to build absolute polygon architecture.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">⌒</div>
+          <div>
+            <div class="tool-name">Quad Curve <kbd>3</kbd></div>
+            <div class="tool-desc">Draws quadratic bezier segments <span class="label">Q</span> utilizing a singular linked control handle.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">〜</div>
+          <div>
+            <div class="tool-name">Cubic Curve <kbd>4</kbd></div>
+            <div class="tool-desc">Generates cubic curves <span class="label">C</span> utilizing independent entry/exit control vectors.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">🎯</div>
+          <div>
+            <div class="tool-name">Relocate Base Point <kbd>Alt+B</kbd></div>
+            <div class="tool-desc">Moves the transform registration origin marker of a layer without altering underlying vector points.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">🔗</div>
+          <div>
+            <div class="tool-name">Connect Mode <kbd>Alt+J</kbd></div>
+            <div class="tool-desc">Bridges two separate open-ended structural nodes or boundaries seamlessly into a unified compound path.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">✏</div>
+          <div>
+            <div class="tool-name">Freehand Draw <kbd>6</kbd></div>
+            <div class="tool-desc">Sketches organic paths naturally. Built-in algorithms simplify complex lines down into clean curves automatically on release.</div>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-icon">▭</div>
+          <div>
+            <div class="tool-name">Shapes / Canvas <kbd>7, 8, 9</kbd></div>
+            <div class="tool-desc">Draws pre-calculated primitive vectors like rectangles, circles, or arcs with instant geometric handle creation.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s4">
+    <div class="section-header">
+      <div class="section-icon">🧲</div>
+      <div>
+        <h2>Smart Snap Engine</h2>
+        <div class="sec-sub">Achieve programmatic alignment down to the decimal point</div>
+      </div>
+      <div class="section-num">04</div>
+    </div>
+    <div class="section-body">
+      <p>The updated layout features an intelligent snapping engine to manage precise canvas coordinates. Toggle quickly via (<kbd>S</kbd>).</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">⊕ Axis Alignment Constraints</div>
+            <div class="step-desc">Pins points safely to the global matrix X=0 and Y=0 grid lines automatically.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">⊞ Adaptive Grid Snapping</div>
+            <div class="step-desc">Aligns elements with the active background grid matrix. Set intervals seamlessly via the dropdown panel (0.05, 0.1, 0.25, 0.5).</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">◉ Inter-Layer Node Snapping</div>
+            <div class="step-desc">Snaps active selections to match vector coordinates across separate layers. Essential for rendering perfect enclosed shapes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s5">
+    <div class="section-header">
+      <div class="section-icon">✨</div>
+      <div>
+        <h2>AI Trace (Image → Shape)</h2>
+        <div class="sec-sub">Convert raster images into clean vector layer data instantly</div>
+      </div>
+      <div class="section-num">05</div>
+    </div>
+    <div class="section-body">
+      <div class="workflow">
+        <div class="wf-step active"><span class="wf-icon">🖼</span>Drop Image</div>
+        <div class="wf-step"><span class="wf-icon">⚙️</span>Tweak Params</div>
+        <div class="wf-step"><span class="wf-icon">🤖</span>Trace</div>
+        <div class="wf-step"><span class="wf-icon">✅</span>Export Vector</div>
+      </div>
+      <p>Located in the Left Panel, <strong>AI Trace</strong> uses real-time edge contour-finding algorithms to vectorise transparent image matrices natively.</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Upload Image Target</div>
+            <div class="step-desc">Drop any transparent PNG/WebP element into the canvas interaction portal and trigger the <strong>✨ Trace</strong> operation interface.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Alpha & Smoothing Passes</div>
+            <div class="step-desc">Adjust the alpha threshold cutoff settings to isolate complex textures. Increase the smoothing passes to reduce jagged pixel edges.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">RDP Simplification Sliders</div>
+            <div class="step-desc">Leverage the Ramer-Douglas-Peucker value parameters to reduce overall point count while maintaining accurate shape contours.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s6">
+    <div class="section-header">
+      <div class="section-icon">📑</div>
+      <div>
+        <h2>Layers, Groups & Opacity</h2>
+        <div class="sec-sub">Control hierarchy, rename groups, and toggle segment outlines</div>
+      </div>
+      <div class="section-num">06</div>
+    </div>
+    <div class="section-body">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Inline Group Renaming</div>
+            <div class="step-desc">Double-click any folder asset layer row or press <kbd>F2</kbd> to unlock fast text modification and keep project trees organized.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Shape Global Opacity</div>
+            <div class="step-desc">Adjust a layer's overall transparency value using the alpha slider in the updated right panel cards, allowing for complex multi-layered transparency effects.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Per-Segment Stroke Toggle</div>
+            <div class="step-desc">Select specific segments along a vector path to toggle individual line rendering states on or off without breaking the filled shape container.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s7">
+    <div class="section-header">
+      <div class="section-icon">🖼</div>
+      <div>
+        <h2>Reference Image (Flexible Handles)</h2>
+        <div class="sec-sub">Precise manual blueprint tracing with variable rotation values</div>
+      </div>
+      <div class="section-num">07</div>
+    </div>
+    <div class="section-body">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Advanced Transformations</div>
+            <div class="step-desc">Upload a design file to the left configuration panel. Version 8 features <strong>Reference Rotation</strong> inputs to align tilted reference blueprints perfectly.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Flexible Interactive Handles</div>
+            <div class="step-desc">Press <kbd>R</kbd> to activate the Reference utility. Drag the flexible perimeter adjustment handles to stretch, mirror, or scale your underlying image safely.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s8">
+    <div class="section-header">
+      <div class="section-icon">🎨</div>
+      <div>
+        <h2>Presets</h2>
+        <div class="sec-sub">Speed up workflows using fully customizable baseline setups</div>
+      </div>
+      <div class="section-num">08</div>
+    </div>
+    <div class="section-body">
+      <p>Clicking a baseline asset immediately overwrites active layer trees with structured compound layouts. Use with caution.</p>
+      <div class="tool-grid">
+        <div class="tool-card"><div class="tool-icon">✦</div><div><div class="tool-name">Talisman Base</div><div class="tool-desc">3-petal complex interlocking curve network.</div></div></div>
+        <div class="tool-card"><div class="tool-icon">❋</div><div><div class="tool-name">Flower Matrix</div><div class="tool-desc">5-petal geometric outline loop profile.</div></div></div>
+        <div class="tool-card"><div class="tool-icon">★</div><div><div class="tool-name">Star Array</div><div class="tool-desc">5-point uniform stellar vector map with focal centers.</div></div></div>
+        <div class="tool-card"><div class="tool-icon">◆</div><div><div class="tool-name">Leaf Nodes</div><div class="tool-desc">4 symmetric leaf segments set precisely at 45° intervals.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s9">
+    <div class="section-header">
+      <div class="section-icon">⬇</div>
+      <div>
+        <h2>Export (Code & JSON)</h2>
+        <div class="sec-sub">Instant code generation for high-performance animation engines</div>
+      </div>
+      <div class="section-num">09</div>
+    </div>
+    <div class="section-body">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Multi-Target Output Compilation</div>
+            <div class="step-desc">Extract mathematics directly into production formats: <strong>PixiJS</strong> (TypeScript code blocks), <strong>Canvas 2D</strong> (Vanilla JavaScript execution), or <strong>WebGL</strong> (GLSL fragment shader code).</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Project State Data Pipelines</div>
+            <div class="step-desc">Export absolute `.json` project structures to local folders. Re-import them at any time to recover full node histories, layer weights, and reference matrix configurations.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="s10">
+    <div class="section-header">
+      <div class="section-icon">⌨</div>
+      <div>
+        <h2>Keyboard Shortcuts</h2>
+        <div class="sec-sub">Accelerate drawing workflows with specialized hotkeys</div>
+      </div>
+      <div class="section-num">10</div>
+    </div>
+    <div class="section-body">
+      <table class="shortcut-table">
+        <thead>
+          <tr><th>Shortcut</th><th class="desc">Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><kbd>1</kbd> - <kbd>9</kbd></td><td>Switch Drawing and Shape Primitive utilities</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>B</kbd></td><td>Trigger Base Point Relocation mode</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>J</kbd></td><td>Activate Node Connectivity / Connect mode</td></tr>
+          <tr><td><kbd>F2</kbd></td><td>Rename Selected Layer / Asset Group inline</td></tr>
+          <tr><td><kbd>T</kbd></td><td>Instantiate Text Input engine layers</td></tr>
+          <tr><td><kbd>R</kbd></td><td>Toggle Reference Control transformation boundaries</td></tr>
+          <tr><td><kbd>H</kbd></td><td>Enter Canvas View Pan movement state</td></tr>
+          <tr><td><kbd>S</kbd> / <kbd>G</kbd></td><td>Toggle Snapping systems / Global visible layout grids</td></tr>
+          <tr><td><kbd>Tab</kbd></td><td>Cycle Right Panel tabs (Layers → Props → Export → JSON)</td></tr>
+          <tr><td><kbd>Del</kbd> / <kbd>Backspace</kbd></td><td>Remove captured point architecture from the workspace</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Deselect elements and safely return to Selection pointer tool</td></tr>
+          <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd> / <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Step backward / Forward across local timeline states</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Shape Editor Pro · User Guide v8.0<br>
+</div>
+
+</body>
+</html>
