@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Shape Editor Pro v7 - Fleam / dev 4pirrl</title>
+  <title>Shape Editor Pro v8 - Fleam / 4pirrl</title>
   <link rel="stylesheet" href="./editor.css" type="text/css"/>
 </head>
 <body oncontextmenu="return false;">
@@ -12,7 +12,7 @@
 <div class="hdr">
   <div class="logo">✦</div>
   <span class="hdr-title">Shape Editor</span>
-  <span class="badge">Pro v7</span>
+  <span class="badge">Pro v8</span>
   <div class="hdr-sp"></div>
   <button class="hbtn" id="undoBtn" onclick="undo()" disabled>↩ Undo</button>
   <button class="hbtn" id="redoBtn" onclick="redo()" disabled>↪ Redo</button>
@@ -91,12 +91,15 @@
           <button class="tbtn" data-mode="ellipse"><span class="ti">⬭</span>Ellipse<span class="tk">9</span></button>
           <button class="tbtn" data-mode="text"><span class="ti">T</span>Text<span class="tk">T</span></button>
           <button class="tbtn" data-mode="ref"><span class="ti">🖼</span>Ref<span class="tk">R</span></button>
+          <!-- v8 new tools -->
+          <button class="tbtn v8tool" data-mode="relocate"><span class="ti">⊕</span>Rebase<span class="tk">B</span></button>
+          <button class="tbtn v8tool" data-mode="connect"><span class="ti">⟜</span>Connect<span class="tk">J</span></button>
           <span class="tool-section-label">Shapes</span>
           <button class="tbtn" data-mode="polygon"><span class="ti">⬡</span>Polygon<span class="tk">P</span></button>
           <button class="tbtn" data-mode="star"><span class="ti">★</span>Star<span class="tk">*</span></button>
           <button class="tbtn" data-mode="triangle"><span class="ti">▲</span>Triangle</button>
           <button class="tbtn" data-mode="rrect"><span class="ti">▢</span>RRect</button>
-          <button class="tbtn" data-mode="rrect"><span class="ti">🌀</span>Spiral</button>
+          <button class="tbtn" data-mode="spiral"><span class="ti">🌀</span>Spiral</button>
         </div>
       </div>
     </details>
@@ -163,7 +166,7 @@
         </div>
         <div class="togr"><span class="togl">Grid</span><input type="checkbox" id="showGrid" checked onchange="S.showGrid=this.checked;updateCtxBar();redraw()"/></div>
         <div class="togr"><span class="togl">Size ring</span><input type="checkbox" id="showSzRing" checked onchange="S.showSzRing=this.checked;redraw()"/></div>
-        <div class="togr"><span class="togl">Handles</span><input type="checkbox" id="showHandles" checked onchange="S.showHandles=this.checked;updateCtxBar();redraw()"/></div>
+        <div class="togr"><span class="togl">Handles</span><input type="checkbox" id="showHandles" checked onchange="S.showHandles=!S.showHandles;updateCtxBar();redraw()"/></div>
         <div class="togr"><span class="togl">Repeats</span><input type="checkbox" id="showRepeats" checked onchange="S.showRepeats=this.checked;redraw()"/></div>
       </div>
     </details>
@@ -204,10 +207,20 @@
             oninput="S.refScale=parseFloat(this.value);document.getElementById('vrefScale').textContent=parseFloat(this.value).toFixed(1)+'×';redraw()"/>
           <span class="cv" id="vrefScale">1.0×</span>
         </div>
+        <div class="cr">
+          <span class="cl">Rotate</span>
+          <input type="range" id="refRotate" min="-180" max="180" step="1" value="0"
+            oninput="S.refRotate=parseFloat(this.value);document.getElementById('vrefRotate').textContent=this.value+'°';redraw()"/>
+          <span class="cv" id="vrefRotate">0°</span>
+        </div>
         <div class="togr"><span class="togl">Visible</span><input type="checkbox" id="refVisible" checked onchange="S.refVisible=this.checked;redraw()"/></div>
         <div style="display:flex;gap:3px;margin-top:4px">
-          <button class="hbtn" style="flex:1;justify-content:center;font-size:8.5px" onclick="S.refOffX=0;S.refOffY=0;redraw();toast('Ref centered')">⊕ Center</button>
-          <button class="hbtn" style="flex:1;justify-content:center;font-size:8.5px" onclick="clearRef()">✕ Remove</button>
+          <button class="hbtn" style="flex:1;justify-content:center;font-size:8px"
+            onclick="S.refOffX=0;S.refOffY=0;S.refRotate=0;S.refScale=1;
+            ['refRotate','refScale'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=id==='refRotate'?0:1});
+            document.getElementById('vrefRotate').textContent='0°';
+            document.getElementById('vrefScale').textContent='1.0×';redraw();toast('Ref reset')">⊕ Reset</button>
+          <button class="hbtn" style="flex:1;justify-content:center;font-size:8px" onclick="clearRef()">✕ Remove</button>
         </div>
       </div>
     </details>
@@ -217,7 +230,7 @@
   <!-- ── CANVAS ── -->
   <div class="carea" id="carea"><canvas id="c" tabindex=0></canvas></div>
 
-  <!-- ── RIGHT PANEL ── -->
+  <!-- ── RIGHT PANEL (v8 redesigned) ── -->
   <div class="right">
     <div class="rtabs">
       <button class="rtab active" data-rtab="layers" onclick="setRTab('layers')">Layers</button>
@@ -231,14 +244,14 @@
       <div class="layer-acts">
         <button class="hbtn" data-act="add-path">+Path</button>
         <button class="hbtn" data-act="add-circle">+Circ</button>
-        <button class="hbtn" data-act="add-stroke">+Stroke</button>
+        <button class="hbtn" data-act="add-stroke">+Strk</button>
         <button class="hbtn" data-act="add-text">+Text</button>
         <button class="hbtn" data-act="add-group" title="Group selected layers">📁 Grp</button>
       </div>
       <div id="layerList"></div>
     </div>
 
-    <!-- PROPS -->
+    <!-- PROPS (v8 card layout) -->
     <div class="rpanel hidden" id="rp-props">
       <div id="shapeProps"><div class="empty-h">Select a layer to edit.</div></div>
     </div>
@@ -254,7 +267,6 @@
         <canvas id="previewCanvas" width="284" height="160"></canvas>
         <span class="preview-label" id="previewLabel">PixiJS Preview</span>
       </div>
-      <!-- image export -->
       <div class="img-export-row">
         <select class="img-format-sel" id="imgFormat">
           <option value="image/png">PNG</option>
@@ -290,11 +302,52 @@
   <span class="si">Pts: <b id="st-pts">—</b></span>
   <span class="si">Sel: <b id="st-sel">0</b></span>
   <span class="si-snap" id="st-snap"></span>
-  <span class="si-r si">Shape Editor Pro v7</span>
+  <span class="si-r si">Shape Editor Pro v8</span>
 </div>
 
 <div class="toast" id="toast"></div>
 <div class="tip" id="tip"></div>
+
+<!-- ══════════════ DRAG SELECTION POPUP (v8 new) ══════════════ -->
+<div class="sel-popup" id="selPopup" style="display:none">
+  <div class="sel-popup-hdr">
+    <span id="selPopupCount">0 shapes selected</span>
+    <span class="sp-drag-hint">Drag ⊕ to move</span>
+    <button class="ibtn sp-close" onclick="hideSelPopup()">✕</button>
+  </div>
+  <div class="sel-popup-body">
+    <div class="cr">
+      <span class="cl">Opacity</span>
+      <input type="range" id="spOpacity" min="0" max="1" step="0.05" value="1"
+        oninput="applySelProp('opacity',parseFloat(this.value));document.getElementById('spOpacityV').textContent=Math.round(this.value*100)+'%'"/>
+      <span class="cv" id="spOpacityV">100%</span>
+    </div>
+    <div class="cr">
+      <span class="cl">Rotation+</span>
+      <input type="range" id="spRot" min="-180" max="180" step="1" value="0"
+        oninput="applySelDelta('rotationDeg',parseFloat(this.value));document.getElementById('spRotV').textContent=(this.value>0?'+':'')+this.value+'°'"/>
+      <span class="cv" id="spRotV">0°</span>
+    </div>
+    <div class="cr">
+      <span class="cl">Scale×</span>
+      <input type="range" id="spScale" min="0.1" max="3" step="0.05" value="1"
+        oninput="applySelProp('scale',parseFloat(this.value));document.getElementById('spScaleV').textContent=parseFloat(this.value).toFixed(2)+'×'"/>
+      <span class="cv" id="spScaleV">1.00×</span>
+    </div>
+    <div class="sp-btns">
+      <button class="hbtn" onclick="applySelFlip('h')">↔ Flip H</button>
+      <button class="hbtn" onclick="applySelFlip('v')">↕ Flip V</button>
+      <button class="hbtn" onclick="groupSelected()">📁 Group</button>
+      <button class="hbtn warn" onclick="deleteSelected()">✕ Del</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CONNECT MODE INDICATOR (v8 new) ══════════════ -->
+<div class="connect-ind" id="connectInd" style="display:none">
+  <span id="connectIndTxt">⟜ Connect: click 1st anchor</span>
+  <button class="ibtn ci-cancel" onclick="cancelConnect()">✕ Cancel</button>
+</div>
 
 <!-- ══════════════ AI MODAL ══════════════ -->
 <div class="modal-overlay" id="aiModal">
@@ -344,7 +397,8 @@
   <div class="cm-item" data-act="flip-v"><span class="cm-icon">↕</span> Flip Vertical</div>
   <div class="cm-sep"></div>
   <div class="cm-item" data-act="toggle-mask"><span class="cm-icon">⬛</span> Toggle Mask Layer</div>
-  <div class="cm-item" data-act="toggle-stroke"><span class="cm-icon">◎</span> Toggle Stroke</div>
+  <div class="cm-item" data-act="toggle-stroke"><span class="cm-icon">◎</span> Toggle All Strokes</div>
+  <div class="cm-item" data-act="toggle-stroke-here" id="cmStrokeHere" style="display:none"><span class="cm-icon">✂</span> Break/Join Stroke Here</div>
   <div class="cm-item" data-act="add-subpath"><span class="cm-icon">＋</span> Add Subpath</div>
   <div class="cm-sep"></div>
   <div class="cm-item" data-act="merge-shapes"><span class="cm-icon">⧉</span> Merge with Selected</div>
